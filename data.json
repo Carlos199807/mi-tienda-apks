@@ -1,0 +1,199 @@
+{
+  "siteName": "Mi Tienda APKs",
+  "bannerText": "Juegos y aplicaciones para Android – descarga apps gratis sin virus",
+  "communityTitle": "Únete a nuestra comunidad",
+  "communityDesc": "Recibe las últimas actualizaciones y noticias directamente.",
+  "communityBtn": "Únete ahora →",
+  "communityLink": "#",
+  "footerCopy": "Copyright © 2025 Mi Tienda APKs",
+  "theme": "green",
+
+  "ultimas": [
+    {
+      "id": 1,
+      "name": "App de Ejemplo 1",
+      "category": "Entretenimiento",
+      "rating": "4.6",
+      "size": "50M",
+      "tag": "mod",
+      "tagLabel": "MOD",
+      "banner": "🎮",
+      "icon": "🎮",
+      "link": "#"
+    },
+    {
+      "id": 2,
+      "name": "App de Ejemplo 2",
+      "category": "Acción",
+      "rating": "4.5",
+      "size": "120M",
+      "tag": "free",
+      "tagLabel": "GRATIS",
+      "banner": "🚀",
+      "icon": "🚀",
+      "link": "#"
+    },
+    {
+      "id": 3,
+      "name": "App de Ejemplo 3",
+      "category": "Carreras",
+      "rating": "4.3",
+      "size": "200M",
+      "tag": "pro",
+      "tagLabel": "PRO",
+      "banner": "🏎️",
+      "icon": "🏎️",
+      "link": "#"
+    }
+  ],
+
+  "tendencias": [
+    {
+      "id": 1,
+      "name": "App Tendencia 1",
+      "category": "Aplicaciones de video",
+      "rating": "4.7",
+      "size": "270M",
+      "tag": "mod",
+      "tagLabel": "FUNCIONES ADICIONALES",
+      "icon": "✂️",
+      "link": "#"
+    },
+    {
+      "id": 2,
+      "name": "App Tendencia 2",
+      "category": "Acción",
+      "rating": "4.4",
+      "size": "2.4GB",
+      "tag": "free",
+      "tagLabel": "DINERO ILIMITADO",
+      "icon": "🎮",
+      "link": "#"
+    },
+    {
+      "id": 3,
+      "name": "App Tendencia 3",
+      "category": "Aventura",
+      "rating": "4.2",
+      "size": "680M",
+      "tag": "pro",
+      "tagLabel": "PRO",
+      "icon": "🛡️",
+      "link": "#"
+    }
+  ],
+
+  "recomendado": [
+    {
+      "id": 1,
+      "name": "Recomendada 1",
+      "category": "Música y audio",
+      "rating": "4.6",
+      "size": "50M",
+      "tag": "mod",
+      "tagLabel": "FUNCIONES ADICIONALES",
+      "icon": "🎵",
+      "link": "#"
+    },
+    {
+      "id": 2,
+      "name": "Recomendada 2",
+      "category": "Entretenimiento",
+      "rating": "4.5",
+      "size": "25M",
+      "tag": "free",
+      "tagLabel": "GRATIS",
+      "icon": "📺",
+      "link": "#"
+    }
+  ],
+
+  "juegos": [
+    {
+      "id": 1,
+      "name": "Juego Ejemplo 1",
+      "category": "Acción",
+      "rating": "4.5",
+      "size": "900M",
+      "tag": "free",
+      "tagLabel": "GRATIS",
+      "icon": "⚔️",
+      "link": "#"
+    },
+    {
+      "id": 2,
+      "name": "Juego Ejemplo 2",
+      "category": "Aventura",
+      "rating": "4.4",
+      "size": "610M",
+      "tag": "mod",
+      "tagLabel": "MOD",
+      "icon": "🧟",
+      "link": "#"
+    }
+  ],
+
+  "apps": [
+    {
+      "id": 1,
+      "name": "App Utilidad 1",
+      "category": "Herramientas",
+      "rating": "4.3",
+      "size": "20M",
+      "tag": "free",
+      "tagLabel": "GRATIS",
+      "icon": "🔧",
+      "link": "#"
+    },
+    {
+      "id": 2,
+      "name": "App Utilidad 2",
+      "category": "Productividad",
+      "rating": "4.6",
+      "size": "35M",
+      "tag": "pro",
+      "tagLabel": "PRO",
+      "icon": "📊",
+      "link": "#"
+    }
+  ],
+
+  "blog": [
+    {
+      "id": 1,
+      "title": "Noticia de ejemplo 1",
+      "date": "06 May 2026",
+      "author": "Admin",
+      "views": 84,
+      "image": "📰",
+      "link": "#"
+    },
+    {
+      "id": 2,
+      "title": "Noticia de ejemplo 2",
+      "date": "06 May 2026",
+      "author": "Admin",
+      "views": 42,
+      "image": "📱",
+      "link": "#"
+    },
+    {
+      "id": 3,
+      "title": "Noticia de ejemplo 3",
+      "date": "06 May 2026",
+      "author": "Admin",
+      "views": 49,
+      "image": "🎮",
+      "link": "#"
+    },
+    {
+      "id": 4,
+      "title": "Noticia de ejemplo 4",
+      "date": "06 May 2026",
+      "author": "Admin",
+      "views": 28,
+      "image": "🔥",
+      "link": "#"
+    }
+  ]
+}

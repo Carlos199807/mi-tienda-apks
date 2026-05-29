@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DMCA</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+  <header class="navbar">
+    <div class="navbar-left">
+      <span class="logo-text" id="site-name">Mi Tienda <span class="logo-accent">APKs</span></span>
+    </div>
+    <div class="navbar-right">
+      <button class="btn-theme" onclick="toggleTheme()"><i class="fas fa-moon" id="theme-icon"></i></button>
+    </div>
+  </header>
+  <main class="container" style="max-width:800px;padding-top:40px;">
+    <a href="index.html" style="color:var(--primary);font-weight:600;display:inline-flex;align-items:center;gap:6px;margin-bottom:24px;text-decoration:none;">
+      <i class="fas fa-arrow-left"></i> Volver al inicio
+    </a>
+    <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:24px;color:var(--text)">Política de Privacidad</h1>
+    <div id="legal-content" style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;white-space:pre-line;"></div>
+  </main>
+  <footer class="footer">
+    <p class="footer-copy" id="footer-copy">Copyright © 2025 Mi Tienda APKs</p>
+  </footer>
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const data = JSON.parse(localStorage.getItem("tiendaData") || "{}");
+      const content = document.getElementById("legal-content");
+      content.textContent = data.legalDmca || "Contenido pendiente.";
+      const fc = document.getElementById("footer-copy");
+      if (fc && data.footerCopy) fc.textContent = data.footerCopy;
+    });
+  </script>
+</body>
+</html>

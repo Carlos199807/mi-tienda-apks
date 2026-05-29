@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Admin – Mi Tienda APKs</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',sans-serif; background:#f0f2f5; color:#1a1a1a; }
+
+    /* LOGIN */
+    .login-screen {
+      display:flex; align-items:center; justify-content:center;
+      min-height:100vh; background:linear-gradient(135deg,#1a1a2e,#16213e);
+    }
+    .login-box {
+      background:white; border-radius:20px; padding:40px;
+      width:90%; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.3);
+      text-align:center;
+    }
+    .login-box h1 { font-size:1.5rem; font-weight:800; margin-bottom:8px; }
+    .login-box h1 span { color:#34c759; }
+    .login-box p { color:#666; margin-bottom:28px; font-size:0.9rem; }
+    .login-field {
+      display:flex; flex-direction:column; gap:6px;
+      margin-bottom:16px; text-align:left;
+    }
+    .login-field label { font-size:0.85rem; font-weight:600; color:#444; }
+    .login-field input {
+      padding:12px 16px; border:1px solid #e0e0e0; border-radius:10px;
+      font-size:0.95rem; outline:none; transition:border 0.2s;
+    }
+    .login-field input:focus { border-color:#1a8a2e; }
+    .login-error { color:#c62828; font-size:0.85rem; margin-bottom:12px; display:none; }
+    .btn-login {
+      width:100%; padding:12px; background:#1a8a2e; color:white;
+      border:none; border-radius:10px; font-size:1rem; font-weight:700;
+      cursor:pointer; transition:background 0.2s; margin-top:8px;
+    }
+    .btn-login:hover { background:#146e24; }
+    .login-hint { color:#999; font-size:0.75rem; margin-top:16px; }
+
+    /* ADMIN PANEL */
+    .admin-panel { display:none; }
+    .admin-panel.active { display:block; }
+
+    .sidebar {
+      position:fixed; left:0; top:0; bottom:0; width:240px;
+      background:#1a1a2e; color:white; padding:24px 0; z-index:100; overflow-y:auto;
+    }
+    .sidebar-logo {
+      padding:0 24px 24px; font-size:1.2rem; font-weight:800;
+      border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:16px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .sidebar-logo span { color:#34c759; }
+    .btn-logout {
+      background:rgba(255,255,255,0.1); border:none; color:white;
+      padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem;
+    }
+    .sidebar-menu a {
+      display:flex; align-items:center; gap:12px; padding:12px 24px;
+      color:rgba(255,255,255,0.7); text-decoration:none; font-size:0.9rem;
+      transition:all 0.2s; cursor:pointer;
+    }
+    .sidebar-menu a:hover, .sidebar-menu a.active {
+      background:rgba(255,255,255,0.1); color:white;
+    }
+    .sidebar-menu a i { width:18px; }
+
+    .main { margin-left:240px; padding:24px; min-height:100vh; }
+
+    .admin-header {
+      background:white; border-radius:12px; padding:16px 24px; margin-bottom:24px;
+      display:flex; justify-content:space-between; align-items:center;
+      box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    }
+    .admin-header h1 { font-size:1.2rem; font-weight:700; }
+    .btn-ver-web {
+      background:#1a8a2e; color:white; border:none; padding:8px 18px;
+      border-radius:20px; font-weight:600; cursor:pointer; font-size:0.85rem;
+      text-decoration:none; display:inline-block;
+    }
+
+    .panel { display:none; }
+    .panel.active { display:block; }
+
+    .stats-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+      gap:16px; margin-bottom:24px;
+    }
+    .stat-card {
+      background:white; border-radius:12px; padding:20px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.06); text-align:center;
+    }
+    .stat-card i { font-size:2rem; margin-bottom:8px; }
+    .stat-card .stat-num { font-size:1.8rem; font-weight:800; }
+    .stat-card .stat-label { color:#666; font-size:0.85rem; }
+
+    .form-card {
+      background:white; border-radius:12px; padding:24px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:24px;
+    }
+    .form-card h2 {
+      font-size:1.1rem; font-weight:700; margin-bottom:20px;
+      padding-bottom:12px; border-bottom:2px solid #f0f2f5;
+    }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-group { display:flex; flex-direction:column; gap:6px; }
+    .form-group.full { grid-column:1/-1; }
+    .form-group label { font-size:0.85rem; font-weight:600; color:#444; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding:10px 14px; border:1px solid #e0e0e0; border-radius:8px;
+      font-size:0.9rem; background:#fafafa; color:#1a1a1a;
+      outline:none; transition:border 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus { border-color:#1a8a2e; }
+    .form-group textarea { resize:vertical; min-height:80px; }
+
+    .btn-primary {
+      background:#1a8a2e; color:white; border:none; padding:10px 24px;
+      border-radius:8px; font-weight:600; cursor:pointer; font-size:0.9rem;
+      margin-top:16px; transition:background 0.2s; display:inline-block;
+    }
+    .btn-primary:hover { background:#146e24; }
+    .btn-danger {
+      background:#c62828; color:white; border:none; padding:6px 14px;
+      border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;
+    }
+    .btn-edit {
+      background:#1565c0; color:white; border:none; padding:6px 14px;
+      border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;
+    }
+    .btn-secondary {
+      background:#666; color:white; border:none; padding:10px 24px;
+      border-radius:8px; font-weight:600; cursor:pointer; font-size:0.9rem;
+      margin-top:16px; margin-left:8px;
+    }
+    .btn-warning {
+      background:#e65100; color:white; border:none; padding:6px 14px;
+      border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;
+    }
+
+    .table-card {
+      background:white; border-radius:12px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden; margin-bottom:24px;
+    }
+    .table-card h2 {
+      padding:16px 24px; font-size:1rem; font-weight:700;
+      border-bottom:1px solid #f0f2f5;
+    }
+    table { width:100%; border-collapse:collapse; }
+    th {
+      background:#f8f9fa; padding:12px 16px; text-align:left;
+      font-size:0.8rem; color:#666; font-weight:600;
+    }
+    td { padding:12px 16px; border-bottom:1px solid #f5f5f5; font-size:0.85rem; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#fafafa; }
+
+    /* GALERÍA */
+    .gallery-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+      gap:10px; margin-top:12px;
+    }
+    .gallery-item {
+      position:relative; border-radius:8px; overflow:hidden;
+      background:#f0f2f5; aspect-ratio:16/9;
+    }
+    .gallery-item img { width:100%; height:100%; object-fit:cover; }
+    .gallery-item .remove-gallery {
+      position:absolute; top:4px; right:4px;
+      background:rgba(198,40,40,0.9); color:white; border:none;
+      border-radius:50%; width:22px; height:22px; cursor:pointer;
+      font-size:0.7rem; display:flex; align-items:center; justify-content:center;
+    }
+    .gallery-add {
+      display:flex; align-items:center; justify-content:center;
+      background:#f0f2f5; border:2px dashed #ccc; border-radius:8px;
+      aspect-ratio:16/9; cursor:pointer; color:#999; font-size:0.8rem;
+      flex-direction:column; gap:4px; transition:border 0.2s;
+    }
+    .gallery-add:hover { border-color:#1a8a2e; color:#1a8a2e; }
+
+    /* COLORES */
+    .colors-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+      gap:10px; margin-top:16px;
+    }
+    .color-btn {
+      height:56px; border-radius:10px; border:3px solid transparent;
+      cursor:pointer; font-weight:700; color:white; font-size:0.75rem;
+      transition:transform 0.2s; display:flex; align-items:center; justify-content:center;
+    }
+    .color-btn:hover { transform:scale(1.05); }
+    .color-btn.selected { border-color:#fff; transform:scale(1.05); box-shadow:0 0 0 3px #1a1a2e; }
+
+    /* TAGS */
+    .tag { font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:10px; text-transform:uppercase; }
+    .tag-mod { background:#ff6b35; color:white; }
+    .tag-pro { background:#1a8a2e; color:white; }
+    .tag-free { background:#1565c0; color:white; }
+    .tag-premium { background:#6a1b9a; color:white; }
+
+    /* REDES */
+    .red-item {
+      display:flex; align-items:center; gap:8px; background:#f8f9fa;
+      border-radius:10px; padding:10px; margin-bottom:8px; border:1px solid #e0e0e0;
+      flex-wrap:wrap;
+    }
+    .red-item input { flex:1; min-width:120px; padding:8px 10px; border:1px solid #e0e0e0; border-radius:6px; font-size:0.85rem; background:white; }
+    .red-item select { padding:8px; border:1px solid #e0e0e0; border-radius:6px; font-size:0.85rem; background:white; }
+    .toggle-btn { padding:6px 12px; border-radius:6px; border:none; font-weight:600; cursor:pointer; font-size:0.8rem; white-space:nowrap; }
+    .toggle-on { background:#1a8a2e; color:white; }
+    .toggle-off { background:#ccc; color:#666; }
+
+    /* BANNERS */
+    .banner-item {
+      display:flex; align-items:center; gap:10px; background:#f8f9fa;
+      border-radius:10px; padding:10px; margin-bottom:8px; border:1px solid #e0e0e0; flex-wrap:wrap;
+    }
+    .banner-item input { flex:1; min-width:120px; padding:8px 10px; border:1px solid #e0e0e0; border-radius:6px; font-size:0.85rem; background:white; }
+
+    /* CATEGORÍAS Y SECCIONES MANAGER */
+    .tag-manager {
+      display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;
+    }
+    .tag-chip {
+      display:flex; align-items:center; gap:6px; background:#e8f5e9;
+      color:#1a8a2e; padding:6px 12px; border-radius:20px; font-size:0.85rem; font-weight:600;
+    }
+    .tag-chip button {
+      background:none; border:none; color:#c62828; cursor:pointer;
+      font-size:0.9rem; padding:0; line-height:1;
+    }
+    .add-tag-row { display:flex; gap:8px; align-items:center; margin-top:8px; }
+    .add-tag-row input { flex:1; padding:8px 12px; border:1px solid #e0e0e0; border-radius:8px; font-size:0.9rem; outline:none; }
+    .add-tag-row input:focus { border-color:#1a8a2e; }
+
+    /* LOGO */
+    .logo-preview { width:120px; height:60px; object-fit:contain; border:1px solid #e0e0e0; border-radius:8px; background:#f5f5f5; margin-top:8px; display:block; }
+
+    /* MODAL */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center; }
+    .modal-overlay.active { display:flex; }
+    .modal { background:white; border-radius:16px; padding:28px; width:90%; max-width:700px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.2); }
+    .modal h2 { font-size:1.1rem; font-weight:700; margin-bottom:20px; }
+    .modal-actions { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+
+    /* TOAST */
+    .toast { position:fixed; bottom:24px; right:24px; background:#1a8a2e; color:white; padding:12px 24px; border-radius:10px; font-weight:600; z-index:9999; display:none; box-shadow:0 4px 16px rgba(0,0,0,0.2); }
+    .toast.show { display:block; animation:fadeIn 0.3s; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    @media(max-width:768px) {
+      .sidebar { width:60px; }
+      .sidebar-logo span, .sidebar-logo .btn-logout, .sidebar-menu a span { display:none; }
+      .main { margin-left:60px; }
+      .form-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-box">
+      <h1>Mi Tienda <span>APKs</span></h1>
+      <p>Panel de Administración — Acceso restringido</p>
+      <div class="login-field">
+        <label>Usuario</label>
+        <input type="text" id="login-user" placeholder="admin" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <div class="login-field">
+        <label>Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <p class="login-error" id="login-error">❌ Usuario o contraseña incorrectos</p>
+      <button class="btn-login" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Entrar al panel</button>
+      <p class="login-hint">Usuario por defecto: <b>admin</b> / Contraseña: <b>admin123</b><br>Puedes cambiarlos en Configuración</p>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div class="admin-panel" id="admin-panel">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <span>Mi Tienda <span>APKs</span></span>
+        <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+      <nav class="sidebar-menu">
+        <a onclick="showPanel('dashboard',this)" class="active"><i class="fas fa-chart-bar"></i><span>Dashboard</span></a>
+        <a onclick="showPanel('apps',this)"><i class="fas fa-layer-group"></i><span>Gestionar Apps</span></a>
+        <a onclick="showPanel('blog',this)"><i class="fas fa-newspaper"></i><span>Gestionar Blog</span></a>
+        <a onclick="showPanel('apariencia',this)"><i class="fas fa-palette"></i><span>Apariencia</span></a>
+        <a onclick="showPanel('configuracion',this)"><i class="fas fa-cog"></i><span>Configuración</span></a>
+       <a onclick="showPanel('contacto',this)"><i class="fas fa-envelope"></i><span>Contacto</span></a>
+       <a onclick="showPanel('pwa',this)"><i class="fas fa-mobile-alt"></i><span>PWA / App</span></a>
+      </nav>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="admin-header">
+        <h1 id="panel-title">Dashboard</h1>
+        <a href="index.html" class="btn-ver-web" target="_blank"><i class="fas fa-eye"></i> Ver Web</a>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="panel active" id="panel-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><i class="fas fa-layer-group" style="color:#1a8a2e"></i><div class="stat-num" id="stat-apps">0</div><div class="stat-label">Apps publicadas</div></div>
+          <div class="stat-card"><i class="fas fa-gamepad" style="color:#1565c0"></i><div class="stat-num" id="stat-juegos">0</div><div class="stat-label">Juegos publicados</div></div>
+          <div class="stat-card"><i class="fas fa-newspaper" style="color:#e65100"></i><div class="stat-num" id="stat-blog">0</div><div class="stat-label">Entradas de blog</div></div>
+          <div class="stat-card"><i class="fas fa-fire" style="color:#c62828"></i><div class="stat-num" id="stat-tendencias">0</div><div class="stat-label">En tendencias</div></div>
+        </div>
+        <div class="form-card">
+          <h2>👋 Bienvenido al Panel Admin</h2>
+          <p style="color:#666;line-height:1.8">
+            • <b>Gestionar Apps</b> — Añade, edita o elimina apps con galería de imágenes<br>
+            • <b>Gestionar Blog</b> — Publica y edita noticias<br>
+            • <b>Apariencia</b> — 65 colores y modo oscuro/claro<br>
+            • <b>Configuración</b> — Logo, banners, redes sociales, credenciales<br>
+            • <b>Contacto</b> — Configura formulario y redes
+          </p>
+        </div>
+      </div>
+
+      
+      <!-- GESTIONAR APPS -->
+      <div class="panel" id="panel-apps">
+        <div class="form-card">
+          <h2>➕ Añadir nueva App o Juego</h2>
+          <div class="form-grid">
+            <div class="form-group"><label>Nombre de la App</label><input type="text" id="app-name" placeholder="Ej: CapCut Pro"/></div>
+            <div class="form-group">
+              <label>Categoría <button class="btn-warning" style="margin-left:8px;padding:3px 10px;font-size:0.75rem;" onclick="showCatManager()">⚙️ Gestionar</button></label>
+              <select id="app-category"></select>
+            </div>
+            <div class="form-group">
+              <label>Sección <button class="btn-warning" style="margin-left:8px;padding:3px 10px;font-size:0.75rem;" onclick="showSecManager()">⚙️ Gestionar</button></label>
+              <select id="app-section"></select>
+            </div>
+            <div class="form-group">
+              <label>Etiqueta</label>
+              <select id="app-tag">
+                <option value="free">GRATIS</option>
+                <option value="mod">MOD</option>
+                <option value="pro">PRO</option>
+                <option value="premium">PREMIUM</option>
+                <option value="new">NUEVO</option>
+                <option value="update">ACTUALIZADO</option>
+                <option value="hot">🔥 HOT</option>
+                <option value="exclusive">EXCLUSIVO</option>
+                <option value="custom">✏️ Personalizada</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Texto de etiqueta</label><input type="text" id="app-taglabel" placeholder="Ej: FUNCIONES ADICIONALES"/></div>
+            <div class="form-group"><label>Rating (ej: 4.5)</label><input type="text" id="app-rating" placeholder="4.5"/></div>
+            <div class="form-group"><label>Tamaño (ej: 50M)</label><input type="text" id="app-size" placeholder="50M"/></div>
+            <div class="form-group"><label>Emoji icono</label><input type="text" id="app-icon" placeholder="🎮"/></div>
+            <div class="form-group"><label>Sistema de valoración</label>
+              <select id="app-rating-type">
+                <option value="none">Sin valoración</option>
+                <option value="stars">⭐ Estrellas</option>
+                <option value="hearts">❤️ Corazones</option>
+              </select>
+            </div>
+            <div class="form-group"><label>URL de descarga</label><input type="text" id="app-link" placeholder="Cualquier url..."/></div>
+            <div class="form-group full">
+              <label>🔗 Botón extra/recursos (opcional)</label>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <input type="text" id="app-extra-label" placeholder="Texto del botón ej: Recursos, Mirror, Extra..." style="flex:1"/>
+                <input type="text" id="app-extra-link" placeholder="URL del botón extra..." style="flex:2"/>
+              </div>
+            </div>
+            <div class="form-group full"><label>Descripción de la app</label><textarea id="app-desc" placeholder="Describe la app como en Google Play Store..."></textarea></div>
+            <div class="form-group full">
+  <label>Imagen icono (opcional)</label>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <input type="text" id="app-iconimg" placeholder="https://..." style="flex:1"/>
+    <label style="background:#1565c0;color:white;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;">
+      <i class="fas fa-upload"></i> Subir
+      <input type="file" accept="image/*" style="display:none" onchange="uploadAppIcon(this,'app-iconimg')"/>
+    </label>
+    <img id="app-iconimg-preview" style="display:none;width:48px;height:48px;border-radius:10px;object-fit:cover;"/>
+  </div>
+</div>
+            <div class="form-group full"><label>URL imagen banner principal (opcional)</label><input type="text" id="app-bannerimg" placeholder="https://..."/></div>
+            <div class="form-group full">
+              <label>🖼️ Galería de imágenes (opcional — estilo Play Store)</label>
+              <div class="gallery-grid" id="add-gallery-grid">
+                <div class="gallery-add" onclick="addGalleryItem('add-gallery-grid')">
+                  <i class="fas fa-plus" style="font-size:1.2rem"></i>
+                  <span>Añadir imagen</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="addApp()"><i class="fas fa-plus"></i> Añadir App</button>
+        </div>
+        <div class="table-card">
+          <h2>📋 Apps publicadas</h2>
+          <div style="padding:16px 16px 0;">
+            <input type="text" id="apps-search" placeholder="🔍 Buscar app por nombre, categoría o sección..."
+              oninput="filterAppsTable(this.value)"
+              style="width:100%;padding:10px 14px;border:1px solid #e0e0e0;border-radius:8px;font-size:0.9rem;outline:none;"/>
+          </div>
+          <table>
+            <thead><tr><th>Nombre</th><th>Categoría</th><th>Sección</th><th>Etiqueta</th><th>Rating</th><th>Galería</th><th>Acciones</th></tr></thead>
+            <tbody id="apps-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+     <!-- GESTIONAR BLOG -->
+      <div class="panel" id="panel-blog">
+        <div class="form-card">
+          <h2>✏️ Añadir entrada de Blog</h2>
+          <div class="form-grid">
+            <div class="form-group full"><label>Título del artículo</label><input type="text" id="blog-title" placeholder="Ej: Las mejores apps de 2026"/></div>
+            <div class="form-group"><label>Autor</label><input type="text" id="blog-author" placeholder="Admin"/></div>
+            <div class="form-group"><label>Emoji</label><input type="text" id="blog-image" placeholder="📰"/></div>
+            <div class="form-group full">
+              <label>Imagen del artículo (opcional)</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <input type="text" id="blog-imageurl" placeholder="https://..." style="flex:1"/>
+                <label style="background:#1565c0;color:white;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;">
+                  <i class="fas fa-upload"></i> Subir
+                  <input type="file" accept="image/*" style="display:none" onchange="uploadBlogImage(this)"/>
+                </label>
+              </div>
+              <img id="blog-imageurl-preview" style="display:none;height:60px;margin-top:8px;border-radius:8px;object-fit:cover;"/>
+            </div>
+            <div class="form-group full"><label>URL del artículo completo</label><input type="text" id="blog-link" placeholder="https://..."/></div>
+            <div class="form-group full"><label>Contenido del artículo</label><textarea id="blog-content" style="min-height:150px" placeholder="Escribe el contenido completo aquí..."></textarea></div>
+            <div class="form-group full">
+              <label>🖼️ Galería de imágenes del artículo (opcional)</label>
+              <div class="gallery-grid" id="add-blog-gallery-grid">
+                <div class="gallery-add" onclick="addBlogGalleryItem('add-blog-gallery-grid')">
+                  <i class="fas fa-plus" style="font-size:1.2rem"></i>
+                  <span>Añadir imagen</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="addBlog()"><i class="fas fa-plus"></i> Publicar artículo</button>
+        </div>
+        <div class="table-card">
+          <h2>📋 Artículos publicados</h2>
+          <table>
+            <thead><tr><th>Título</th><th>Autor</th><th>Fecha</th><th>Acciones</th></tr></thead>
+            <tbody id="blog-table"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- APARIENCIA -->
+      <div class="panel" id="panel-apariencia">
+        <div class="form-card">
+          <h2>🎨 Elige el color principal (65 temas)</h2>
+          <div class="colors-grid" id="colors-grid"></div>
+        </div>
+        <div class="form-card">
+          <h2>🌙 Modo de pantalla</h2>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn-primary" onclick="setMode('light')"><i class="fas fa-sun"></i> Modo Claro</button>
+            <button class="btn-primary" style="background:#1a1a2e" onclick="setMode('dark')"><i class="fas fa-moon"></i> Modo Oscuro</button>
+          </div>
+        </div>
+      </div>
+
+     <!-- CONFIGURACIÓN -->
+      <div class="panel" id="panel-configuracion">
+
+        <div class="form-card">
+          <h2>🏪 Identidad de la tienda</h2>
+          <div class="form-grid">
+            <div class="form-group full"><label>Nombre de la tienda</label><input type="text" id="config-sitename" placeholder="Mi Tienda APKs"/></div>
+            <div class="form-group full">
+              <label>Logo (URL de imagen)</label>
+              <input type="text" id="config-logo-url" placeholder="https://..." oninput="previewLogo()"/>
+              <img id="logo-preview" class="logo-preview" src="" alt="Preview" style="display:none"/>
+              <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+                <label style="background:#1565c0;color:white;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;">
+                  <i class="fas fa-upload"></i> Subir desde PC
+                  <input type="file" id="config-logo-file" accept="image/*" onchange="uploadLogo()" style="display:none"/>
+                </label>
+                <button class="btn-danger" onclick="removeLogo()" style="margin-top:0"><i class="fas fa-trash"></i> Eliminar logo</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveConfig()"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+
+        <div class="form-card">
+          <h2>🔐 Cambiar credenciales de acceso</h2>
+          <div class="form-grid">
+            <div class="form-group"><label>Nuevo usuario</label><input type="text" id="config-admin-user" placeholder="admin"/></div>
+            <div class="form-group"><label>Nueva contraseña</label><input type="password" id="config-admin-pass" placeholder="••••••••"/></div>
+          </div>
+          <button class="btn-primary" onclick="saveCredentials()"><i class="fas fa-save"></i> Guardar credenciales</button>
+        </div>
+
+        <div class="form-card">
+          <h2>📢 Banner principal</h2>
+          <div class="form-group" style="margin-bottom:16px"><label>Texto del banner</label><input type="text" id="config-banner"/></div>
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px;color:#333">🎠 Carrusel de banners</h3>
+          <div id="banners-list"></div>
+          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center;">
+            <button class="btn-primary" onclick="addBannerItem()"><i class="fas fa-plus"></i> Añadir banner</button>
+            <select id="banner-mode" style="padding:10px 14px;border:1px solid #e0e0e0;border-radius:8px;font-size:0.9rem;margin-top:16px;">
+              <option value="auto">Automático</option>
+              <option value="manual">Manual</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="saveBanners()" style="margin-top:12px"><i class="fas fa-save"></i> Guardar banners</button>
+        </div>
+
+        <div class="form-card">
+          <h2>📱 Redes sociales y comunidad</h2>
+          <div id="redes-list"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+            <button class="btn-primary" onclick="addRedItem()"><i class="fas fa-plus"></i> Añadir red social</button>
+            <button class="btn-primary" onclick="saveRedes()" style="background:#146e24"><i class="fas fa-save"></i> Guardar redes</button>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h2>🤝 Banner comunidad</h2>
+          <div class="form-grid">
+            <div class="form-group full"><label>Título</label><input type="text" id="config-comm-title"/></div>
+            <div class="form-group full"><label>Descripción</label><input type="text" id="config-comm-desc"/></div>
+            <div class="form-group full"><label>Texto del botón</label><input type="text" id="config-comm-btn"/></div>
+            <div class="form-group full"><label>Link del botón</label><input type="text" id="config-comm-link"/></div>
+            <div class="form-group full">
+              <label>Imagen de fondo del banner comunidad (URL)</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+  <input type="text" id="config-comm-bg" placeholder="https://... (imagen de fondo opcional)" style="flex:1"/>
+  <label style="background:#1565c0;color:white;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;">
+    <i class="fas fa-upload"></i> Subir
+    <input type="file" accept="image/*" style="display:none" onchange="uploadCommBg(this)"/>
+  </label>
+</div>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveConfig()"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+
+        <div class="form-card">
+          <h2>📄 Footer</h2>
+          <div class="form-group"><label>Texto copyright</label><input type="text" id="config-footer"/></div>
+          <button class="btn-primary" onclick="saveConfig()"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+
+        <div class="form-card">
+          <h2>📄 Páginas legales</h2>
+          <div class="form-group full"><label>Política de Privacidad</label><textarea id="legal-privacidad" style="min-height:120px" placeholder="Escribe aquí el contenido..."></textarea></div>
+          <div class="form-group full"><label>Política de Cookies</label><textarea id="legal-cookies" style="min-height:120px" placeholder="Escribe aquí el contenido..."></textarea></div>
+          <div class="form-group full"><label>DMCA</label><textarea id="legal-dmca" style="min-height:120px" placeholder="Escribe aquí el contenido..."></textarea></div>
+          <div class="form-group full"><label>Acerca de Nosotros</label><textarea id="legal-acerca" style="min-height:120px" placeholder="Escribe aquí el contenido..."></textarea></div>
+          <button class="btn-primary" onclick="saveLegal()"><i class="fas fa-save"></i> Guardar páginas legales</button>
+        </div>
+
+        <div class="form-card">
+          <h2>🧭 Editar menú de navegación</h2>
+          <div id="nav-items-list"></div>
+          <button class="btn-primary" onclick="saveNavItems()"><i class="fas fa-save"></i> Guardar menú</button>
+        </div>
+      </div>
+
+      <!-- CONTACTO -->
+      <div class="panel" id="panel-contacto">
+        <div class="form-card">
+          <h2>📬 Configurar página de Contacto</h2>
+          <div class="form-grid">
+            <div class="form-group full"><label>Título</label><input type="text" id="contact-title" placeholder="Contáctanos"/></div>
+            <div class="form-group full"><label>Descripción</label><textarea id="contact-desc"></textarea></div>
+            <div class="form-group full"><label>Email de contacto</label><input type="email" id="contact-email"/></div>
+            <div class="form-group"><label>¿Mostrar formulario?</label>
+              <select id="contact-form-show">
+                <option value="yes">Sí</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveContact()"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+      </div>
+
+      <!-- PANEL PWA -->
+      <div class="panel" id="panel-pwa">
+        <div class="form-card">
+          <h2>📱 Configuración PWA / App</h2>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Favicon / Icono de la app (URL)</label>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input type="text" id="pwa-favicon" placeholder="https://... icono 512x512 recomendado"/>
+                <img id="pwa-favicon-preview" style="display:none;width:48px;height:48px;border-radius:10px;object-fit:cover;border:1px solid #e0e0e0;"/>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label>Nombre de la app (PWA)</label>
+              <input type="text" id="pwa-name" placeholder="Mi Tienda APKs"/>
+            </div>
+            <div class="form-group full">
+              <label>Descripción corta</label>
+              <input type="text" id="pwa-desc" placeholder="La mejor tienda de APKs"/>
+            </div>
+            <div class="form-group">
+              <label>Color del tema</label>
+              <input type="color" id="pwa-color" value="#1a8a2e"/>
+            </div>
+            <div class="form-group">
+              <label>¿Mostrar botón "Instalar app"?</label>
+              <select id="pwa-install-btn">
+                <option value="yes">Sí</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="savePWA()"><i class="fas fa-save"></i> Guardar PWA</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+ <!-- MODAL EDITAR APP -->
+  <div class="modal-overlay" id="modal-app">
+    <div class="modal">
+      <h2>✏️ Editar App</h2>
+      <input type="hidden" id="edit-app-section"/>
+      <input type="hidden" id="edit-app-index"/>
+      <div class="form-grid">
+        <div class="form-group"><label>Nombre</label><input type="text" id="edit-app-name"/></div>
+        <div class="form-group"><label>Categoría</label><select id="edit-app-category"></select></div>
+        <div class="form-group"><label>Etiqueta</label>
+          <select id="edit-app-tag">
+            <option value="free">GRATIS</option>
+            <option value="mod">MOD</option>
+            <option value="pro">PRO</option>
+            <option value="premium">PREMIUM</option>
+            <option value="new">NUEVO</option>
+            <option value="update">ACTUALIZADO</option>
+            <option value="hot">🔥 HOT</option>
+            <option value="exclusive">EXCLUSIVO</option>
+            <option value="custom">✏️ Personalizada</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Texto etiqueta</label><input type="text" id="edit-app-taglabel"/></div>
+        <div class="form-group"><label>Rating</label><input type="text" id="edit-app-rating"/></div>
+        <div class="form-group"><label>Tamaño</label><input type="text" id="edit-app-size"/></div>
+        <div class="form-group"><label>Emoji icono</label><input type="text" id="edit-app-icon"/></div>
+        <div class="form-group"><label>Valoración</label>
+          <select id="edit-app-rating-type">
+            <option value="none">Sin valoración</option>
+            <option value="stars">⭐ Estrellas</option>
+            <option value="hearts">❤️ Corazones</option>
+          </select>
+        </div>
+        <div class="form-group full"><label>URL descarga</label><input type="text" id="edit-app-link"/></div>
+        <div class="form-group full">
+          <label>🔗 Botón extra/recursos (opcional)</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input type="text" id="edit-app-extra-label" placeholder="Texto del botón..."/>
+            <input type="text" id="edit-app-extra-link" placeholder="URL del botón extra..."/>
+          </div>
+        </div>
+        <div class="form-group full"><label>Descripción</label><textarea id="edit-app-desc"></textarea></div>
+        <div class="form-group full">
+          <label>Icono</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input type="text" id="edit-app-iconimg" placeholder="https://..." style="flex:1"/>
+            <label style="background:#1565c0;color:white;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;">
+              <i class="fas fa-upload"></i> Subir
+              <input type="file" accept="image/*" style="display:none" onchange="uploadAppIcon(this,'edit-app-iconimg')"/>
+            </label>
+          </div>
+        </div>
+        <div class="form-group full"><label>URL banner</label><input type="text" id="edit-app-bannerimg"/></div>
+        <div class="form-group full">
+          <label>🖼️ Galería de imágenes</label>
+          <div class="gallery-grid" id="edit-gallery-grid">
+            <div class="gallery-add" onclick="addGalleryItem('edit-gallery-grid')">
+              <i class="fas fa-plus"></i><span>Añadir</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="saveEditApp()"><i class="fas fa-save"></i> Guardar</button>
+        <button class="btn-secondary" onclick="closeModal('modal-app')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR BLOG -->
+  <div class="modal-overlay" id="modal-blog">
+    <div class="modal">
+      <h2>✏️ Editar Artículo</h2>
+      <input type="hidden" id="edit-blog-index"/>
+      <div class="form-grid">
+        <div class="form-group full"><label>Título</label><input type="text" id="edit-blog-title"/></div>
+        <div class="form-group"><label>Autor</label><input type="text" id="edit-blog-author"/></div>
+        <div class="form-group"><label>Emoji</label><input type="text" id="edit-blog-image"/></div>
+        <div class="form-group full">
+  <label>Imagen</label>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <input type="text" id="edit-blog-imageurl" placeholder="https://..." style="flex:1"/>
+    <label style="background:#1565c0;color:white;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;">
+      <i class="fas fa-upload"></i> Subir
+      <input type="file" accept="image/*" style="display:none" onchange="uploadEditBlogImage(this)"/>
+    </label>
+  </div>
+</div>
+        <div class="form-group full">
+          <label>URL artículo (externo o interno)</label>
+          <input type="text" id="edit-blog-link" placeholder="https://... o vacío para contenido interno"/>
+        </div>
+        <div class="form-group full"><label>Contenido</label><textarea id="edit-blog-content" style="min-height:150px"></textarea></div>
+        <div class="form-group full">
+          <label>🖼️ Galería de imágenes del artículo</label>
+          <div class="gallery-grid" id="edit-blog-gallery-grid">
+            <div class="gallery-add" onclick="addBlogGalleryItem('edit-blog-gallery-grid')">
+              <i class="fas fa-plus"></i><span>Añadir imagen</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="saveEditBlog()"><i class="fas fa-save"></i> Guardar</button>
+        <button class="btn-secondary" onclick="closeModal('modal-blog')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CATEGORÍAS -->
+  <div class="modal-overlay" id="modal-cats">
+    <div class="modal">
+      <h2>⚙️ Gestionar Categorías</h2>
+      <div class="tag-manager" id="cats-chips"></div>
+      <div class="add-tag-row">
+        <input type="text" id="new-cat-input" placeholder="Nueva categoría..." onkeydown="if(event.key==='Enter')addCatFromModal()"/>
+        <button class="btn-primary" style="margin-top:0" onclick="addCatFromModal()"><i class="fas fa-plus"></i> Añadir</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('modal-cats')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SECCIONES -->
+  <div class="modal-overlay" id="modal-secs">
+    <div class="modal">
+      <h2>⚙️ Gestionar Secciones</h2>
+      <div class="tag-manager" id="secs-chips"></div>
+      <div class="add-tag-row">
+        <input type="text" id="new-sec-input" placeholder="Nueva sección..." onkeydown="if(event.key==='Enter')addSecFromModal()"/>
+        <button class="btn-primary" style="margin-top:0" onclick="addSecFromModal()"><i class="fas fa-plus"></i> Añadir</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('modal-secs')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast">✅ Guardado correctamente</div>
+  <script src="admin.js"></script>
+</body>
+</html>
